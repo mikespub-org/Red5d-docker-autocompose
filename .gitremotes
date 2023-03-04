@@ -1,0 +1,3 @@
+[remote "upstream"]
+	url = https://github.com/Red5d/docker-autocompose.git
+	fetch = +refs/heads/*:refs/remotes/upstream/*
