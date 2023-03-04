@@ -1,9 +1,7 @@
 #! /usr/bin/env python3
 import argparse
-import datetime
 import re
 import sys
-
 from collections import OrderedDict
 
 import docker
@@ -128,7 +126,7 @@ def render(struct, args, networks, volumes):
     if args.version == 1:
         pyaml.p(OrderedDict(struct))
     else:
-        ans = {"version": '3.6', "services": struct}
+        ans = {"version": "3.6", "services": struct}
 
         if networks is not None:
             ans["networks"] = networks
@@ -143,7 +141,11 @@ def generate(cname, createvolumes=False):
     c = docker.from_env()
 
     try:
-        cid = [x.short_id for x in c.containers.list(all=True) if cname == x.name or x.short_id in cname][0]
+        cid = [
+            x.short_id
+            for x in c.containers.list(all=True)
+            if cname == x.name or x.short_id in cname
+        ][0]
     except IndexError:
         print("That container is not available.", file=sys.stderr)
         sys.exit(1)
@@ -173,17 +175,25 @@ def generate(cname, createvolumes=False):
         #'log_driver': cattrs.get('HostConfig']['LogConfig']['Type'],
         #'log_opt': cattrs.get('HostConfig']['LogConfig']['Config'],
         "logging": {
-            "driver": cattrs.get("HostConfig", {}).get("LogConfig", {}).get("Type", None),
-            "options": cattrs.get("HostConfig", {}).get("LogConfig", {}).get("Config", None),
+            "driver": cattrs.get("HostConfig", {})
+            .get("LogConfig", {})
+            .get("Type", None),
+            "options": cattrs.get("HostConfig", {})
+            .get("LogConfig", {})
+            .get("Config", None),
         },
         "networks": {
-            x for x in cattrs.get("NetworkSettings", {}).get("Networks", {}).keys() if x not in default_networks
+            x
+            for x in cattrs.get("NetworkSettings", {}).get("Networks", {}).keys()
+            if x not in default_networks
         },
         "security_opt": cattrs.get("HostConfig", {}).get("SecurityOpt"),
         "ulimits": cattrs.get("HostConfig", {}).get("Ulimits"),
         # the line below would not handle type bind
         #        'volumes': [f'{m["Name"]}:{m["Destination"]}' for m in cattrs.get('Mounts'] if m['Type'] == 'volume'],
-        "mounts": cattrs.get("Mounts"),  # this could be moved outside of the dict. will only use it for generate
+        "mounts": cattrs.get(
+            "Mounts"
+        ),  # this could be moved outside of the dict. will only use it for generate
         "volume_driver": cattrs.get("HostConfig", {}).get("VolumeDriver", None),
         "volumes_from": cattrs.get("HostConfig", {}).get("VolumesFrom", None),
         "entrypoint": cattrs.get("Config", {}).get("Entrypoint", None),
@@ -194,7 +204,9 @@ def generate(cname, createvolumes=False):
         "ipc": cattrs.get("HostConfig", {}).get("IpcMode", None),
         "mac_address": cattrs.get("NetworkSettings", {}).get("MacAddress", None),
         "privileged": cattrs.get("HostConfig", {}).get("Privileged", None),
-        "restart": cattrs.get("HostConfig", {}).get("RestartPolicy", {}).get("Name", None),
+        "restart": cattrs.get("HostConfig", {})
+        .get("RestartPolicy", {})
+        .get("Name", None),
         "read_only": cattrs.get("HostConfig", {}).get("ReadonlyRootfs", None),
         "stdin_open": cattrs.get("Config", {}).get("OpenStdin", None),
         "tty": cattrs.get("Config", {}).get("Tty", None),
@@ -203,7 +215,8 @@ def generate(cname, createvolumes=False):
     # Populate devices key if device values are present
     if cattrs.get("HostConfig", {}).get("Devices"):
         values["devices"] = [
-            x["PathOnHost"] + ":" + x["PathInContainer"] for x in cattrs.get("HostConfig", {}).get("Devices")
+            x["PathOnHost"] + ":" + x["PathInContainer"]
+            for x in cattrs.get("HostConfig", {}).get("Devices")
         ]
 
     networks = {}
@@ -211,7 +224,9 @@ def generate(cname, createvolumes=False):
         del values["networks"]
 
         if len(cattrs.get("NetworkSettings", {}).get("Networks", {}).keys()) > 0:
-            assumed_default_network = list(cattrs.get("NetworkSettings", {}).get("Networks", {}).keys())[0]
+            assumed_default_network = list(
+                cattrs.get("NetworkSettings", {}).get("Networks", {}).keys()
+            )[0]
             values["network_mode"] = assumed_default_network
             networks = None
     else:
