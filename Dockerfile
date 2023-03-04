@@ -5,6 +5,6 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-RUN python ./setup.py install
+RUN pip install -r requirements.txt
 
 ENTRYPOINT [ "python", "./autocompose.py" ]
