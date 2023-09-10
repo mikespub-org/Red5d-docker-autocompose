@@ -7,6 +7,7 @@ from collections import OrderedDict
 import docker
 import pyaml
 
+pyaml.add_representer(bool,lambda s,o: s.represent_scalar('tag:yaml.org,2002:bool',['false','true'][o]))
 IGNORE_VALUES = [None, "", [], "null", {}, "default", 0, ",", "no"]
 
 
@@ -262,7 +263,7 @@ def generate(cname, createvolumes=False):
                     }  # to reuse an existing volume ... better to make that a choice? (cli argument)
             elif mount["Type"] == "bind":
                 mountpoints.append(mount["Source"] + ":" + destination)
-        values["volumes"] = mountpoints
+        values["volumes"] = sorted(mountpoints)
     if len(volumes) == 0:
         volumes = None
     values["mounts"] = None  # remove this temporary data from the returned data
